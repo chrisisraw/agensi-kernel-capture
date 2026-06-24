@@ -12,6 +12,13 @@ function apiFetch(path, opts = {}) {
   });
 }
 
+async function safeJson(res) {
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
+  return data;
+}
+
 // ── formatters ────────────────────────────────────────────────────────────────
 
 function fmtAmt(cents) {
@@ -100,8 +107,7 @@ export default function CapturePage() {
     setBusy(true);
     try {
       const res = await apiFetch('', { method: 'POST', body: JSON.stringify({ raw }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      const data = await safeJson(res);
 
       if (data.needsChoice) {
         setPendingChoice({ venture: data.venture, text: data.text, raw });
@@ -144,8 +150,7 @@ export default function CapturePage() {
           body: JSON.stringify({ action: 'move', venture: pendingChoice.venture, text: pendingChoice.text }),
         });
       }
-      data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      data = await safeJson(res);
 
       if (type === 'money') {
         showToast(fmtToast(data), true);
@@ -206,8 +211,7 @@ export default function CapturePage() {
         method: 'POST',
         body: JSON.stringify({ action: 'correct', id, fields }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      const data = await safeJson(res);
       setRows((rs) => rs.map((r) => r.id === id ? data : r));
       closeEdit();
       showToast('✓ corrected', true);
