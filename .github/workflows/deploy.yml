@@ -17,11 +17,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Write env
+        run: |
+          printf 'VITE_LEDGER_FN_URL=%s\n' "${{ secrets.VITE_LEDGER_FN_URL }}" >> .env.production.local
+          printf 'VITE_CAPTURE_KEY=%s\n' "${{ secrets.VITE_CAPTURE_KEY }}" >> .env.production.local
+          echo "VITE vars written: $(grep -c VITE .env.production.local) lines"
+
       - name: Build
         run: npm run build
-        env:
-          VITE_LEDGER_FN_URL: ${{ secrets.VITE_LEDGER_FN_URL }}
-          VITE_CAPTURE_KEY: ${{ secrets.VITE_CAPTURE_KEY }}
 
       - name: Deploy to Netlify
         run: npx netlify-cli deploy --prod --dir=dist
