@@ -121,6 +121,12 @@ export default function CapturePage() {
         return;
       }
 
+      if (data.action === 'life') {
+        showToast(`✓ ${data.area}${data.value ? ` · ${data.value}` : ''} → life log`, true);
+        setText('');
+        return;
+      }
+
       showToast(fmtToast(data), true);
       setText('');
       loadRecent();
@@ -238,7 +244,7 @@ export default function CapturePage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={'$30 two fares downtown @cab\nexpense parking $12 @cab\n$177 bula sign @agensi'}
+          placeholder={'$30 two fares downtown @cab\nwrote 800 words · surfed dawn patrol\nslept 7h · called mom'}
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
@@ -313,9 +319,9 @@ export default function CapturePage() {
 
         {/* ── parse legend ── */}
         <div style={s.legend}>
-          <span style={s.legendItem}><span style={s.amber}>$NN</span> amount</span>
+          <span style={s.legendItem}><span style={s.amber}>$NN</span> money</span>
           <span style={s.legendItem}><span style={s.amber}>@cab</span> entity</span>
-          <span style={s.legendItem}><span style={s.amber}>expense</span> direction</span>
+          <span style={s.legendItem}><span style={s.amber}>wrote/surf/slept</span> life</span>
           <span style={s.legendItem}><span style={s.amber}>Enter</span> log</span>
         </div>
 
@@ -406,7 +412,9 @@ export default function CapturePage() {
                   onClick={() => openEdit(row)}
                   style={s.recentRow}
                 >
-                  <span style={s.recentAmt}>{fmtAmt(row.actual_cents)}</span>
+                  <span style={{ ...s.recentAmt, color: row.direction === 'expense' ? '#e57373' : AMBER }}>
+                    {row.direction === 'expense' ? `-${fmtAmt(row.actual_cents)}` : fmtAmt(row.actual_cents)}
+                  </span>
                   <span style={s.recentMeta}>
                     {' '}· {row.direction === 'expense' ? 'exp' : 'inc'}/{row.stream ?? '?'}
                   </span>
